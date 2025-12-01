@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Taller Vehículos</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-bg: #1e293b;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--dark-bg);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .separator {
+            opacity: 0.5;
+        }
+
+        .count {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        /* Config Section */
+        .config-section {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            max-width: 1600px;
+            margin: 1rem auto;
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .config-section.hidden {
+            display: none;
+        }
+
+        .config-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .config-input label {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .config-input input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .config-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: white;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .error-message p {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--danger-color);
+        }
+
+        /* No Data */
+        .no-data {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .no-data p {
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+        }
+
+        /* Trabajos Grid */
+        .trabajos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Trabajo Card */
+        .trabajo-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid var(--primary-color);
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .trabajo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        .trabajo-card.pendiente {
+            border-left-color: var(--warning-color);
+        }
+
+        .trabajo-card.en-proceso {
+            border-left-color: var(--primary-color);
+        }
+
+        .trabajo-card.asignado {
+            border-left-color: var(--secondary-color);
+        }
+
+        .trabajo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .trabajo-id {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .trabajo-estado {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .trabajo-estado.pendiente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .trabajo-estado.en-proceso {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .trabajo-estado.asignado {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .trabajo-info {
+            margin-top: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 130px;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .highlight-pendiente {
+            background: #fef3c7;
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+        }
+
+        .highlight-pendiente .info-value {
+            color: #92400e;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .separator {
+                display: none;
+            }
+
+            .trabajos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Para TV/Pantallas grandes */
+        @media (min-width: 1920px) {
+            .header h1 {
+                font-size: 3.5rem;
+            }
+
+            .header-info {
+                font-size: 1.5rem;
+            }
+
+            .trabajos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+                gap: 2rem;
+            }
+
+            .trabajo-card {
+                padding: 2rem;
+            }
+
+            .info-row {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🚗 TALLER - TRABAJOS PENDIENTES</h1>
+                <div class="header-info">
+                    <span id="current-time" class="time"></span>
+                    <span class="separator">|</span>
+                    <span id="work-count" class="count">Cargando...</span>
+                    <span class="separator">|</span>
+                    <span id="last-update" class="update-time">Última actualización: --:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Configuración -->
+        <div id="config-section" class="config-section">
+            <h2>⚙️ Configuración de Google Sheets</h2>
+            <p style="margin: 1rem 0; color: var(--text-secondary);">
+                Ingresa los datos de tu Google Sheet para comenzar. Esta configuración se guardará en tu navegador.
+            </p>
+            <div class="config-input">
+                <label>
+                    ID de Google Sheet:
+                    <input type="text" id="sheet-id" placeholder="1abc...xyz (desde la URL del sheet)">
+                </label>
+                <label>
+                    API Key de Google:
+                    <input type="text" id="api-key" placeholder="AIza...">
+                </label>
+            </div>
+            <div class="config-input">
+                <label>
+                    Nombre de la Hoja:
+                    <input type="text" id="sheet-name" value="Sheet1" placeholder="Sheet1">
+                </label>
+                <label>
+                    Rango de Datos:
+                    <input type="text" id="sheet-range" value="A:Z" placeholder="A:Z">
+                </label>
+            </div>
+            <div class="config-buttons">
+                <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar y Cargar Datos</button>
+                <button class="btn btn-secondary" onclick="toggleConfig()">❌ Cerrar</button>
+            </div>
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f1f5f9; border-radius: 6px;">
+                <strong>📖 Ayuda:</strong>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-secondary);">
+                    <li>ID del Sheet: Copia desde la URL entre /d/ y /edit</li>
+                    <li>API Key: Obtén una en Google Cloud Console</li>
+                    <li>El Sheet debe ser público o compartido</li>
+                    <li><a href="#" onclick="showInstructions(); return false;">Ver instrucciones completas</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Cargando trabajos...</p>
+            </div>
+
+            <div id="error" class="error-message" style="display: none;">
+                <p id="error-text">⚠️ Error al cargar los datos</p>
+                <button class="btn btn-primary" onclick="loadData()">Reintentar</button>
+                <button class="btn btn-secondary" onclick="toggleConfig()">⚙️ Configurar</button>
+            </div>
+
+            <div id="trabajos-container" class="trabajos-grid">
+                <!-- Los trabajos se cargarán dinámicamente aquí -->
+            </div>
+
+            <div id="no-data" class="no-data" style="display: none;">
+                <p>✅ No hay trabajos pendientes</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Sistema de Gestión de Trabajos | Actualización automática cada 30 segundos | 
+            <a href="#" onclick="toggleConfig(); return false;" style="color: white; text-decoration: underline;">⚙️ Configuración</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuración
+        const REFRESH_INTERVAL = 30000; // 30 segundos
+        let refreshTimer;
+        let config = {
+            sheetId: '',
+            apiKey: '',
+            sheetName: 'Sheet1',
+            range: 'A:Z'
+        };
+
+        // Cargar configuración guardada
+        function loadConfig() {
+            const saved = localStorage.getItem('dashboardConfig');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('sheet-id').value = config.sheetId;
+                document.getElementById('api-key').value = config.apiKey;
+                document.getElementById('sheet-name').value = config.sheetName;
+                document.getElementById('sheet-range').value = config.range;
+                return true;
+            }
+            return false;
+        }
+
+        // Guardar configuración
+        function saveConfig() {
+            config.sheetId = document.getElementById('sheet-id').value.trim();
+            config.apiKey = document.getElementById('api-key').value.trim();
+            config.sheetName = document.getElementById('sheet-name').value.trim() || 'Sheet1';
+            config.range = document.getElementById('sheet-range').value.trim() || 'A:Z';
+
+            if (!config.sheetId || !config.apiKey) {
+                alert('Por favor completa el ID del Sheet y la API Key');
+                return;
+            }
+
+            localStorage.setItem('dashboardConfig', JSON.stringify(config));
+            toggleConfig();
+            startAutoRefresh();
+        }
+
+        // Mostrar/ocultar configuración
+        function toggleConfig() {
+            const configSection = document.getElementById('config-section');
+            configSection.classList.toggle('hidden');
+        }
+
+        // Mostrar instrucciones
+        function showInstructions() {
+            alert(`📖 INSTRUCCIONES PARA CONFIGURAR:
+
+1. OBTENER ID DE GOOGLE SHEET:
+   - Abre tu Google Sheet
+   - Copia el ID de la URL:
+     https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit
+   
+2. OBTENER API KEY:
+   - Ve a console.cloud.google.com
+   - Crea o selecciona un proyecto
+   - Activa "Google Sheets API"
+   - Ve a Credenciales > Crear credenciales > API Key
+   
+3. HACER EL SHEET PÚBLICO:
+   - En tu Google Sheet, clic en "Compartir"
+   - Cambia a "Cualquiera con el enlace puede ver"
+   
+4. ESTRUCTURA DE DATOS:
+   Tu Sheet debe tener estas columnas:
+   - Nº VEHICULO
+   - REPORTE
+   - TALLER
+   - TRABAJO REALIZADO
+   - PENDIENTES
+   - PRUEBA DE RUTA
+   - TECNICO A CARGO`);
+        }
+
+        // Actualizar reloj
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        // Cargar datos desde Google Sheets
+        async function loadData() {
+            if (!config.sheetId || !config.apiKey) {
+                document.getElementById('config-section').classList.remove('hidden');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const container = document.getElementById('trabajos-container');
+            const noData = document.getElementById('no-data');
+
+            try {
+                loading.style.display = 'flex';
+                error.style.display = 'none';
+
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/${config.sheetName}!${config.range}?key=${config.apiKey}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Error al cargar datos');
+                }
+
+                const data = await response.json();
+                const trabajos = processWorkOrders(data.values);
+                
+                loading.style.display = 'none';
+
+                if (trabajos.length === 0) {
+                    container.style.display = 'none';
+                    noData.style.display = 'block';
+                } else {
+                    displayTrabajos(trabajos);
+                    container.style.display = 'grid';
+                    noData.style.display = 'none';
+                }
+
+                updateStats(trabajos.length);
+
+            } catch (err) {
+                console.error('Error:', err);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                document.getElementById('error-text').textContent = `⚠️ ${err.message}`;
+                container.style.display = 'none';
+            }
+        }
+
+        // Procesar datos de Google Sheets
+        function processWorkOrders(rawData) {
+            if (!rawData || rawData.length === 0) {
+                return [];
+            }
+
+            const headers = rawData[0];
+            const rows = rawData.slice(1);
+
+            return rows.map(row => {
+                const workOrder = {};
+                headers.forEach((header, index) => {
+                    workOrder[header] = row[index] || '';
+                });
+                return workOrder;
+            }).filter(order => {
+                // Filtra trabajos que tienen pendientes o están en taller
+                const pendientes = order.PENDIENTES || order.Pendientes || '';
+                const taller = order.TALLER || order.Taller || '';
+                
+                return pendientes.trim() !== '' || taller.trim() !== '';
+            });
+        }
+
+        // Mostrar trabajos en el dashboard
+        function displayTrabajos(trabajos) {
+            const container = document.getElementById('trabajos-container');
+            container.innerHTML = '';
+
+            // Ordenar trabajos: primero los que tienen pendientes
+            const sorted = trabajos.sort((a, b) => {
+                const pendientesA = (a.PENDIENTES || a.Pendientes || '').trim();
+                const pendientesB = (b.PENDIENTES || b.Pendientes || '').trim();
+                
+                if (pendientesA && !pendientesB) return -1;
+                if (!pendientesA && pendientesB) return 1;
+                
+                const tallerA = (a.TALLER || a.Taller || '').toLowerCase();
+                const tallerB = (b.TALLER || b.Taller || '').toLowerCase();
+                return tallerA.localeCompare(tallerB);
+            });
+
+            sorted.forEach(trabajo => {
+                const card = createTrabajoCard(trabajo);
+                container.appendChild(card);
+            });
+        }
+
+        // Crear tarjeta de trabajo
+        function createTrabajoCard(trabajo) {
+            const card = document.createElement('div');
+            
+            const vehiculo = trabajo['Nº VEHICULO'] || trabajo['N° VEHICULO'] || trabajo.VEHICULO || 'N/A';
+            const reporte = trabajo.REPORTE || trabajo.Reporte || '';
+            const taller = trabajo.TALLER || trabajo.Taller || '';
+            const trabajoRealizado = trabajo['TRABAJO REALIZADO'] || trabajo.TrabajoRealizado || '';
+            const pendientes = trabajo.PENDIENTES || trabajo.Pendientes || '';
+            const pruebaRuta = trabajo['PRUEBA DE RUTA'] || trabajo['PRIEBA DE RUTA'] || trabajo.PruebaRuta || 'NO';
+            const tecnico = trabajo['TECNICO A CARGO'] || trabajo['TÉCNICO A CARGO'] || trabajo.Tecnico || 'No asignado';
+            
+            let estadoClass = 'pendiente';
+            let estadoTexto = 'PENDIENTE';
+            
+            if (pendientes && pendientes.trim() !== '') {
+                estadoClass = 'pendiente';
+                estadoTexto = 'CON PENDIENTES';
+            } else if (trabajoRealizado && trabajoRealizado.trim() !== '') {
+                estadoClass = 'en-proceso';
+                estadoTexto = 'EN PROCESO';
+            }
+            
+            if (taller && taller.trim() !== '') {
+                estadoClass = 'asignado';
+                estadoTexto = taller.toUpperCase();
+            }
+            
+            card.className = `trabajo-card ${estadoClass}`;
+
+            card.innerHTML = `
+                <div class="trabajo-header">
+                    <div class="trabajo-id">🚗 ${vehiculo}</div>
+                    <span class="trabajo-estado ${estadoClass}">${estadoTexto}</span>
+                </div>
+                <div class="trabajo-info">
+                    ${reporte ? `
+                    <div class="info-row">
+                        <span class="info-label">Reporte:</span>
+                        <span class="info-value">${reporte}</span>
+                    </div>
+                    ` : ''}
+                    ${trabajoRealizado ? `
+                    <div class="info-row">
+                        <span class="info-label">Trabajo Realizado:</span>
+                        <span class="info-value">${trabajoRealizado}</span>
+                    </div>
+                    ` : ''}
+                    ${pendientes ? `
+                    <div class="info-row highlight-pendiente">
+                        <span class="info-label">⚠️ Pendientes:</span>
+                        <span class="info-value"><strong>${pendientes}</strong></span>
+                    </div>
+                    ` : ''}
+                    ${tecnico !== 'No asignado' ? `
+                    <div class="info-row">
+                        <span class="info-label">Técnico:</span>
+                        <span class="info-value">${tecnico}</span>
+                    </div>
+                    ` : ''}
+                    ${pruebaRuta && pruebaRuta.toUpperCase() === 'SI' ? `
+                    <div class="info-row">
+                        <span class="info-label">Prueba de Ruta:</span>
+                        <span class="info-value">✅ ${pruebaRuta}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Actualizar estadísticas
+        function updateStats(count) {
+            document.getElementById('work-count').textContent = `${count} vehículo${count !== 1 ? 's' : ''} pendiente${count !== 1 ? 's' : ''}`;
+            
+            const updateTime = new Date().toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('last-update').textContent = `Última actualización: ${updateTime}`;
+        }
+
+        // Iniciar actualización automática
+        function startAutoRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+
+            loadData();
+            refreshTimer = setInterval(loadData, REFRESH_INTERVAL);
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            const hasConfig = loadConfig();
+            if (hasConfig) {
+                document.getElementById('config-section').classList.add('hidden');
+                startAutoRefresh();
+            }
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    loadData();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
