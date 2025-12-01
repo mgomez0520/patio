@@ -473,12 +473,18 @@
         // Configuración
         const REFRESH_INTERVAL = 30000; // 30 segundos
         let refreshTimer;
+        let lastDataHash = '';
         let config = {
             sheetId: '1_HxlhEn3Unk8LyQ6tty8IQvJBSBad-P-6T8Q5B_a4yI',
             apiKey: 'AIzaSyD22I0Q3leorofLeuRtHAombsU4mBnosmY',
             sheetName: 'hoja 1',
             range: 'A:Z'
         };
+
+        // Función para generar hash simple de los datos
+        function generateHash(data) {
+            return JSON.stringify(data);
+        }
 
         // Cargar configuración guardada
         function loadConfig() {
@@ -586,18 +592,30 @@
                 const data = await response.json();
                 const trabajos = processWorkOrders(data.values);
                 
-                loading.style.display = 'none';
+                // Generar hash de los datos actuales
+                const currentHash = generateHash(trabajos);
+                
+                // Solo actualizar si los datos cambiaron
+                if (currentHash !== lastDataHash) {
+                    lastDataHash = currentHash;
+                    
+                    loading.style.display = 'none';
 
-                if (trabajos.length === 0) {
-                    container.style.display = 'none';
-                    noData.style.display = 'block';
+                    if (trabajos.length === 0) {
+                        container.style.display = 'none';
+                        noData.style.display = 'block';
+                    } else {
+                        displayTrabajos(trabajos);
+                        container.style.display = 'grid';
+                        noData.style.display = 'none';
+                    }
+
+                    updateStats(trabajos.length);
+                    console.log('✅ Dashboard actualizado - Se detectaron cambios');
                 } else {
-                    displayTrabajos(trabajos);
-                    container.style.display = 'grid';
-                    noData.style.display = 'none';
+                    loading.style.display = 'none';
+                    console.log('ℹ️ No hay cambios en los datos');
                 }
-
-                updateStats(trabajos.length);
 
             } catch (err) {
                 console.error('Error:', err);
