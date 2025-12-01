@@ -474,9 +474,9 @@
         const REFRESH_INTERVAL = 30000; // 30 segundos
         let refreshTimer;
         let config = {
-            sheetId: '',
-            apiKey: '',
-            sheetName: 'Sheet1',
+            sheetId: '1_HxlhEn3Unk8LyQ6tty8IQvJBSBad-P-6T8Q5B_a4yI',
+            apiKey: 'AIzaSyD22I0Q3leorofLeuRtHAombsU4mBnosmY',
+            sheetName: 'hoja 1',
             range: 'A:Z'
         };
 
@@ -754,11 +754,9 @@
             updateClock();
             setInterval(updateClock, 1000);
 
-            const hasConfig = loadConfig();
-            if (hasConfig) {
-                document.getElementById('config-section').classList.add('hidden');
-                startAutoRefresh();
-            }
+            // Ocultar configuración y cargar automáticamente
+            document.getElementById('config-section').classList.add('hidden');
+            startAutoRefresh();
 
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
